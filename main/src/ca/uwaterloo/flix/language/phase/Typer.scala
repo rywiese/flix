@@ -126,9 +126,10 @@ object Typer {
       case (traitSym, trt) =>
         val instances = instances0.get(traitSym)
         val envInsts = instances.flatMap {
-          case KindedAst.Instance(_, _, _, _, tparams, tpe, tconstrs, _, _, _, _) =>
+          case KindedAst.Instance(_, _, _, _, tparams, tpe, tconstrs, econstrs, _, _, _, _) =>
+            // TODO: something with econstrs?
             tpe.typeConstructor.map {
-              tc => TypeHead.Cst(tc) -> Instance(tparams.map(_.sym), tpe, tconstrs)
+              tc => TypeHead.Cst(tc) -> Instance(tparams.map(_.sym), tpe, tconstrs, econstrs)
             }
         }.toMap[TypeHead, Instance]
         // ignore the super trait parameters since they should all be the same as the trait param
@@ -180,6 +181,7 @@ object Typer {
   /**
     * Reconstructs types in the given def.
     */
+    // here -- List[EqualityConstraint]
   private def visitDef(defn: KindedAst.Def, tconstrs0: List[TraitConstraint], renv0: RigidityEnv, root: KindedAst.Root, traitEnv: TraitEnv, eqEnv: EqualityEnv, open: Boolean)(implicit sctx: SharedContext, flix: Flix): TypedAst.Def = {
     implicit val scope: Scope = Scope.Top
     implicit val r: KindedAst.Root = root
@@ -269,9 +271,10 @@ object Typer {
     * Reassembles a single instance.
     */
   private def visitInstance(inst: KindedAst.Instance, root: KindedAst.Root, traitEnv: TraitEnv, eqEnv: EqualityEnv)(implicit sctx: SharedContext, flix: Flix): TypedAst.Instance = inst match {
-    case KindedAst.Instance(doc, ann, mod, symUse, tparams0, tpe, tconstrs0, assocs0, defs0, ns, loc) =>
+    case KindedAst.Instance(doc, ann, mod, symUse, tparams0, tpe, tconstrs0, econstrs0, assocs0, defs0, ns, loc) =>
       val renv = tparams0.map(_.sym).foldLeft(RigidityEnv.empty)(_.markRigid(_))
       val tconstrs = tconstrs0 // no subst to be done
+      val econstrs = econstrs0 // no subst to be done... MAYBE?
       val assocs = assocs0.map {
         case KindedAst.AssocTypeDef(defDoc, defMod, defSymUse, args, defTpe, defLoc) =>
           TypedAst.AssocTypeDef(defDoc, defMod, defSymUse, args, defTpe, defLoc)
@@ -281,9 +284,10 @@ object Typer {
         defn =>
           // SUB-EFFECTING: Check if sub-effecting is enabled for instance-level defs.
           val open = shouldSubeffect(defn.spec.eff, Subeffecting.InsDefs)
+          // TODO: something with econstrs?
           visitDef(defn, tconstrs, renv, root, traitEnv, eqEnv, open)
       }
-      TypedAst.Instance(doc, ann, mod, symUse, tpe, tconstrs, assocs, defs, ns, loc)
+      TypedAst.Instance(doc, ann, mod, symUse, tpe, tconstrs, econstrs, assocs, defs, ns, loc)
   }
 
   /**
@@ -393,6 +397,7 @@ object Typer {
   /**
     * Verifies that all the associated types in the spec are resolvable, according to the declared type constraints.
     */
+    // replicate for equality constraints
   private def checkAssocTypes(spec0: KindedAst.Spec, extraTconstrs: List[TraitConstraint], tenv: TraitEnv)(implicit sctx: SharedContext, flix: Flix): Unit = {
     def getAssocTypes(t: Type): List[Type.AssocType] = t match {
       case Type.Var(_, _) => Nil

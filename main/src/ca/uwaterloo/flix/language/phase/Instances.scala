@@ -80,7 +80,7 @@ object Instances {
     * * The same namespace as its type.
     */
   private def checkOrphan(inst: TypedAst.Instance)(implicit sctx: SharedContext, flix: Flix): Unit = inst match {
-    case TypedAst.Instance(_, _, _, trt, tpe, _, _, _, ns, _) => tpe.typeConstructor match {
+    case TypedAst.Instance(_, _, _, trt, tpe, _, _, _, _, ns, _) => tpe.typeConstructor match {
       // Case 1: Enum type in the same namespace as the instance: not an orphan
       case Some(TypeConstructor.Enum(enumSym, _)) if enumSym.namespace == ns.idents.map(_.name) => ()
       // Case 2: Any type in the trait namespace: not an orphan
@@ -98,7 +98,7 @@ object Instances {
     * * all type arguments are variables
     */
   private def checkSimple(inst: TypedAst.Instance)(implicit sctx: SharedContext, flix: Flix): Boolean = inst match {
-    case TypedAst.Instance(_, _, _, trt, tpe, _, _, _, _, _) => tpe match {
+    case TypedAst.Instance(_, _, _, trt, tpe, _, _, _, _, _, _) => tpe match {
       case _: Type.Cst => true
       case _: Type.Var =>
         sctx.errors.add(InstanceError.ComplexInstance(tpe, trt.sym, trt.loc))
@@ -225,7 +225,7 @@ object Instances {
     * and that the constraints on `inst` entail the constraints on the super instance.
     */
   private def checkSuperInstances(inst: TypedAst.Instance, root: TypedAst.Root)(implicit sctx: SharedContext, flix: Flix): Unit = inst match {
-    case TypedAst.Instance(_, _, _, trt, tpe, tconstrs, _, _, _, _) =>
+    case TypedAst.Instance(_, _, _, trt, tpe, tconstrs, econstrs, _, _, _, _) =>
       val superTraits = root.traitEnv.getSuperTraits(trt.sym)
       superTraits.foreach {
         superTrait =>
@@ -245,6 +245,7 @@ object Instances {
                     }
                   }
               }
+              // TODO: something with econstrs?
             case None =>
               // Case 2: No instance matches. Error
               sctx.errors.add(InstanceError.MissingSuperTraitInstance(tpe, trt.sym, superTrait, trt.loc))
