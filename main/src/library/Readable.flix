@@ -20,29 +20,36 @@ import java.io.InputStream
 import java.io.IOException
 
 ///
-/// A trait for types which are resources that can be accessed as bytes.
+/// A trait for types which are resources that can be read from.
 ///
-trait Reader[t] {
+trait Readable[t] {
 
     ///
-    /// Effect associated with reading bytes from the underlying resource.
+    /// Type associated with the data read from the underlying resource.
+    ///
+    type Aty
+
+    ///
+    /// Effect associated with reading data from the underlying resource.
     ///
     type Aef: Eff
 
     ///
-    /// Reads `k` bytes from the underlying resource and writes them into `b`.
+    /// Reads `k` items from the underlying resource and writes them into `b`.
     ///
-    /// Returns `Ok(k)` to signify that `k` bytes was successfully read and written to `b`.
+    /// Returns `Ok(k)` to signify that `k` items were successfully read and written to `b`.
     ///
     /// Guarantees that `0 <= k <= length(b)`.
     ///
     /// Returns `Err(e)` if some underlying I/O error occurs.
     ///
-    pub def read(b: Array[Int8, r], r: t): Result[IoError, Int32] \ r + Reader.Aef[t]
+    pub def read(b: Array[Readable.Aty[t], r], r: t): Result[IoError, Int32] \ r + Readable.Aef[t]
 
 }
 
-instance Reader[InputStream] {
+instance Readable[InputStream] {
+
+    type Aty = Int8
 
     type Aef = IO
 
