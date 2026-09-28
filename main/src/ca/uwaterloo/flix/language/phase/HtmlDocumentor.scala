@@ -99,6 +99,8 @@ object HtmlDocumentor {
 
     visitMod(pairedModulesRoot, outputDir)
 
+    writeDocFile("404.html", document404(), outputDir)
+
     writeAssets(outputDir)
   }
 
@@ -855,6 +857,30 @@ object HtmlDocumentor {
     docSection("Type Aliases", sortedTypeAliases, docTypeAlias)
     docSection("Definitions", sortedModuleDefs, docDef)
 
+    sb.append("</main>")
+
+    sb.append("</body>")
+
+    sb.toString()
+  }
+
+  /**
+    * Documents the "page not found" error page, returning a string of HTML.
+    */
+  private def document404()(implicit flix: Flix): String = {
+    implicit val sb: StringBuilder = new StringBuilder()
+
+    sb.append(mkHead("Page Not Found", "404.html"))
+    sb.append("<body class='no-script'>")
+
+    docHeader()
+
+    sb.append("<nav></nav>")
+
+    sb.append("<main>")
+    sb.append("<h1>Page Not Found</h1>")
+    sb.append("<p>There is no page at this address.</p>")
+    sb.append("<p><a href='index.html'>Go to the documentation home</a>.</p>")
     sb.append("</main>")
 
     sb.append("</body>")
