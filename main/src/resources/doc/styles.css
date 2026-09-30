@@ -409,6 +409,26 @@ nav li > .icon {
     width: 0.8rem;
     height: 0.8rem;
 }
+/* EXPERIMENTAL (T12 design alternative): a compact, color-coded, rounded-rectangle chip spelling
+   out the kind, in place of the masked icon shape. Border and text both take the per-kind `color`
+   set below via `currentColor`; the background stays transparent. */
+nav li > .icon.kind-chip {
+    -webkit-mask: none;
+    mask: none;
+    width: auto;
+    height: auto;
+    box-sizing: border-box;
+    padding: 0.05rem 0.3rem;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    background-color: transparent;
+    color: currentColor;
+    font-family: ui-monospace, "IBM Plex Mono", monospace;
+    font-size: 0.62rem;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+}
 nav .sidebar-list-modules li > .icon {
     color: var(--module-color);
 }

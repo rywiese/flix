@@ -1169,11 +1169,38 @@ object HtmlDocumentor {
     sb.append(s"<ul class='sidebar-list sidebar-list-${esc(cssClass)}'>")
     for (e <- group) {
       sb.append("<li>")
-      docIcon(sideBarIconClass(name))
+      docKindChip(sideBarIconClass(name))
       docElt(e)
       sb.append("</li>")
     }
     sb.append("</ul>")
+  }
+
+  /**
+    * EXPERIMENTAL (T12 design alternative): returns the short, spelled-out label shown inside a
+    * [[docKindChip]] for the icon CSS class `cls` (see [[IconClasses]]).
+    */
+  private def kindChipLabel(cls: String): String = cls match {
+    case "module" => "mod"
+    case "trait" => "trait"
+    case "effect" => "eff"
+    case "enum" => "enum"
+    case "struct" => "struct"
+    case "type-alias" => "alias"
+    case "def" => "def"
+    case _ => throw InternalCompilerException(s"Unexpected icon class: '$cls'", SourceLocation.Unknown)
+  }
+
+  /**
+    * EXPERIMENTAL (T12 design alternative): appends a small rounded-rectangle chip, spelling out
+    * the kind for the icon CSS class `cls`, to the given `StringBuilder`.
+    *
+    * This is an alternative to [[docIcon]]'s mask-image icon shapes: a compact outlined label,
+    * color-coded like the mask icons and the existing bullets, but spelling out the kind instead
+    * of relying on a pictogram.
+    */
+  private def docKindChip(cls: String)(implicit sb: StringBuilder): Unit = {
+    sb.append(s"<span class='$cls icon kind-chip'>${esc(kindChipLabel(cls))}</span>")
   }
 
   /**
@@ -1212,7 +1239,7 @@ object HtmlDocumentor {
     sb.append("<ul class='sidebar-list sidebar-list-modules'>")
     for (m <- sortedItems) {
       sb.append("<li>")
-      docIcon("module")
+      docKindChip("module")
       sb.append(s"<a href='${escUrl(m.fileName)}'>${esc(m.name)}</a>")
       sb.append("</li>")
     }
