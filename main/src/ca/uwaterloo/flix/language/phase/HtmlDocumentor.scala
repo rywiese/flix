@@ -1169,11 +1169,37 @@ object HtmlDocumentor {
     sb.append(s"<ul class='sidebar-list sidebar-list-${esc(cssClass)}'>")
     for (e <- group) {
       sb.append("<li>")
-      docIcon(sideBarIconClass(name))
+      docKindBadge(sideBarIconClass(name))
       docElt(e)
       sb.append("</li>")
     }
     sb.append("</ul>")
+  }
+
+  /**
+    * EXPERIMENTAL (T12 design alternative): returns the short letter/abbreviation shown inside a
+    * [[docKindBadge]] for the icon CSS class `cls` (see [[IconClasses]]).
+    */
+  private def kindBadgeLetter(cls: String): String = cls match {
+    case "module" => "M"
+    case "trait" => "T"
+    case "effect" => "Ef"
+    case "enum" => "En"
+    case "struct" => "S"
+    case "type-alias" => "A"
+    case "def" => "D"
+    case _ => throw InternalCompilerException(s"Unexpected icon class: '$cls'", SourceLocation.Unknown)
+  }
+
+  /**
+    * EXPERIMENTAL (T12 design alternative): appends a small colored circular badge, carrying the
+    * letter/abbreviation for the icon CSS class `cls`, to the given `StringBuilder`.
+    *
+    * This is an alternative to [[docIcon]]'s mask-image icon shapes, modelled on Scaladoc's
+    * entity-kind badges (a colored circle with a single letter).
+    */
+  private def docKindBadge(cls: String)(implicit sb: StringBuilder): Unit = {
+    sb.append(s"<span class='$cls icon kind-badge' data-letter='${esc(kindBadgeLetter(cls))}'></span>")
   }
 
   /**
@@ -1212,7 +1238,7 @@ object HtmlDocumentor {
     sb.append("<ul class='sidebar-list sidebar-list-modules'>")
     for (m <- sortedItems) {
       sb.append("<li>")
-      docIcon("module")
+      docKindBadge("module")
       sb.append(s"<a href='${escUrl(m.fileName)}'>${esc(m.name)}</a>")
       sb.append("</li>")
     }

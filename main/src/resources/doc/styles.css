@@ -409,6 +409,32 @@ nav li > .icon {
     width: 0.8rem;
     height: 0.8rem;
 }
+/* EXPERIMENTAL (T12 design alternative): a Scaladoc-style colored circle with a letter, in place
+   of the masked icon shape. The circle's fill still comes from the per-kind `color` set below
+   (via `background-color: currentColor`), but the letter itself is rendered by a `::after`
+   pseudo-element so it can be given a fixed, high-contrast color independent of that fill. */
+nav li > .icon.kind-badge {
+    -webkit-mask: none;
+    mask: none;
+    width: auto;
+    height: auto;
+    min-width: 1.1rem;
+    box-sizing: border-box;
+    padding: 0.05rem 0.25rem;
+    border-radius: 999px;
+    background-color: currentColor;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+nav li > .icon.kind-badge::after {
+    content: attr(data-letter);
+    color: #fff;
+    font-family: ui-monospace, "IBM Plex Mono", monospace;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
 nav .sidebar-list-modules li > .icon {
     color: var(--module-color);
 }
